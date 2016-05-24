@@ -18,17 +18,16 @@ def set_peaks():
     print 'input two peaks: '
     print 'example: 322 153'
     peaks = raw_input('two peaks: ')
-    peaks = '322 153'
     return peaks.split(' ')
 def normalize(data):
     max_key = max(data.iteritems(), key=operator.itemgetter(1))[0]
     max_value = data[max_key]
     for key in data:
         val = data[key]
-        data[key] = round(val / max_value * 100, 2)
+        data[key] = val / max_value * 100
 
-filename = r'C:\Users\Yun Wang\Desktop\data_txt\ms.txt'
 def get_data_per_file(filename):
+    #print 'reading file %s..' % filename
     data = Data()
     if os.path.exists(filename):
         lines = open(filename).readlines()
@@ -38,50 +37,62 @@ def get_data_per_file(filename):
                 l = l.split(' ')
                 peak, value = str(int(round(float(l[0]),0))), float(l[1])
                 data[peak] = max(value, data[peak])
+    else:
+        print '%s does not exist!' % filename
+        sys.exit(0)
     normalize(data)
     return data 
 
 # working on read file from folder
-mypath = r'E:\lcqdata\data_2\mgf'
 
-files = [f for f in listdir(mypath) if isfile(join(mypath, f))]
 
 def get_data_from_folder(path):
-    data_folder=Data()
-    files = [f for f in listdir(mypath) if isfile(join(mypath, f))]
-    for f in files:
-        data = get_data_per_file(join(path, f))
-        data_folder[f.split('_')[-2].split('ms')[0]] = data
-    return data_folder
+    if os.path.exists(path):
+        print 'loading folder %s..' % path
+        data_folder=Data()
+        files = [f for f in listdir(path) if isfile(join(path, f))]
+        for f in files:
+            data = get_data_per_file(join(path, f))
+            t = float(f.split('_')[-2].split('ms')[0])
+            data_folder[t] = data
+        return data_folder
+    else:
+        print '%s does not exist!' % path
 
 def filt(data, peaks):
     new_data = dict()
-    for key in data:
+    keys = sorted(data.keys())
+    for key in keys:
         d = {}
         val = data[key][peaks[0]] + data[key][peaks[1]]
-        print val
+        #print val
         d[peaks[0]] = math.log(data[key][peaks[0]] / val )
         d[peaks[1]] = math.log(data[key][peaks[1]] / val)
-        print key, data[key][peaks[0]], data[key][peaks[1]] 
+        f = '{0:6} {1:6} {2:6}'
+        print f.format(key, round(data[key][peaks[0]], 2), round(data[key][peaks[1]], 2))
         new_data[key] = d
     return new_data
 
 # correlation
 def regression_calc(data, peaks):
     keys = sorted(data.keys()) 
-    print keys
-    x = []
-    y = []
+    x, y = [], []
     for k in keys :
         x.append(float(k))
         y.append(data[k][peaks[0]])
-    print x
-    print y
     return stats.linregress(x, y)
-def run():
+def get_slope_r(folder_path, peaks):
+    if os.path.exists(folder_path):
+        data_folder = get_data_from_folder(folder_path)
+        data = filt(data_folder, peaks)
+        k, b, r, p, std = regression_calc(data, peaks)
+        return k * 1000, round(-r, 4)
+    else:
+        print '%s folder does not exist!' % folder
+def test():
     folder_path = None
     folder_path = str(raw_input('input the path of folder: '))
-    folder_path = r'E:\lcqdata\data_2\mgf'
+    folder_path = r'E:\lcqdata\data_3\mgf\post'
     print folder_path
     if not os.path.exists(folder_path):
         print 'wrong path, run again'
@@ -89,17 +100,45 @@ def run():
     peaks = set_peaks()
     data_folder = get_data_from_folder(folder_path)
     data = filt(data_folder, peaks)
-    print data
 
-    # print regression_calc(data, peaks)
-    k, b, r, p, std= regression_calc(data, peaks)
-    print k * 1000 , r, b
+    k, b, r, p, std = regression_calc(data, peaks)
+    print get_slope_r(folder_path, peaks)
+    print k, b, r
 
 
-# In[48]:
+def test_path(path):
+    folders = [d for d in listdir(path)]
+    print folders
+    peaks = dict()
+    peaks['pre'] = '102 153'
+    peaks['post'] = '102 153'
+    peaks['reaction'] = '322 153'
+    slopes = {}
+    for folder in folders:
+        folder_path = os.path.join(path, folder)
+        p = peaks[folder].split(' ')
+        slopes[folder] = get_slope_r(folder_path, p)
+    print slopes
 
-run()
-
+def get_slopes(path):
+    folders = [d for d in listdir(path)]
+    print folders
+    peaks = dict()
+    peaks['pre'] = '102 153'
+    peaks['post'] = '102 153'
+    peaks['reaction'] = '322 153'
+    slopes = {}
+    for folder in folders:
+        folder_path = os.path.join(path, folder)
+        p = peaks[folder].split(' ')
+        slopes[folder] = get_slope_r(folder_path, p)
+    return slopes
+    
+if __name__ == '__main__':
+    path = r'E:\lcqdata\data_3\mgf'
+    #test()
+    slopes = get_slopes(path)
+    print slopes
 
 
 
