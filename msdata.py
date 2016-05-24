@@ -16,11 +16,7 @@ class Data(dict):
     def __getitem__(self, index):
         self.setdefault(index, 0.0)
         return dict.__getitem__(self,index)
-def set_peaks():
-    print 'input two peaks: '
-    print 'example: 322 153'
-    peaks = raw_input('two peaks: ')
-    return peaks.split(' ')
+
 def normalize(data):
     max_key = max(data.iteritems(), key=operator.itemgetter(1))[0]
     max_value = data[max_key]
@@ -91,36 +87,6 @@ def get_slope_r(folder_path, peaks):
         return k, round(-r, 4)
     else:
         print '%s folder does not exist!' % folder
-def test():
-    folder_path = None
-    folder_path = str(raw_input('input the path of folder: '))
-    folder_path = r'E:\lcqdata\data_3\mgf\post'
-    print folder_path
-    if not os.path.exists(folder_path):
-        print 'wrong path, run again'
-        sys.exit(0)
-    peaks = set_peaks()
-    data_folder = get_data_from_folder(folder_path)
-    data = filt(data_folder, peaks)
-
-    k, b, r, p, std = regression_calc(data, peaks)
-    print get_slope_r(folder_path, peaks)
-    print k, b, r
-
-
-def test_path(path):
-    folders = [d for d in listdir(path)]
-    print folders
-    peaks = dict()
-    peaks['pre'] = '102 153'
-    peaks['post'] = '102 153'
-    peaks['reaction'] = '322 153'
-    slopes = {}
-    for folder in folders:
-        folder_path = os.path.join(path, folder)
-        p = peaks[folder].split(' ')
-        slopes[folder] = get_slope_r(folder_path, p)
-    print slopes
 
 def get_slopes(path, peaks):
     folders = [d for d in listdir(path)]
