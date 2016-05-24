@@ -10,6 +10,8 @@ import operator
 import math
 import numpy as np
 from scipy import stats
+
+import read_params
 class Data(dict):
     def __getitem__(self, index):
         self.setdefault(index, 0.0)
@@ -86,7 +88,7 @@ def get_slope_r(folder_path, peaks):
         data_folder = get_data_from_folder(folder_path)
         data = filt(data_folder, peaks)
         k, b, r, p, std = regression_calc(data, peaks)
-        return k * 1000, round(-r, 4)
+        return k, round(-r, 4)
     else:
         print '%s folder does not exist!' % folder
 def test():
@@ -120,25 +122,48 @@ def test_path(path):
         slopes[folder] = get_slope_r(folder_path, p)
     print slopes
 
-def get_slopes(path):
+def get_slopes(path, peaks):
     folders = [d for d in listdir(path)]
     print folders
-    peaks = dict()
-    peaks['pre'] = '102 153'
-    peaks['post'] = '102 153'
-    peaks['reaction'] = '322 153'
+
     slopes = {}
     for folder in folders:
         folder_path = os.path.join(path, folder)
         p = peaks[folder].split(' ')
         slopes[folder] = get_slope_r(folder_path, p)
     return slopes
+
+def get_params():
+    cwd = os.getcwd()
+    params_reaction = os.path.join(cwd, r'params_reaction.txt')
+    params_kinetics = os.path.join(cwd, r'params_kinetics.txt')
+    params = {}
+    p_r = read_params.read_parameters(params_reaction)
+    p_k = read_params.read_parameters(params_kinetics)
+    return p_k, p_r
+    
+def calculate(path):
+    kenetics_params, reaction_params = get_params()
+    # read peaks:
+    peaks = dict()
+    peaks['pre'] = kenetics_params['compound_1'][1] + ' ' + kenetics_params['compound_2'][1]
+    peaks['post'] = peaks['pre']
+    peaks['reaction'] = reaction_params['compound_1'][1] + ' ' + reaction_params['compound_2'][1]
+    
+    slopes = get_slopes(path, peaks)
+    P_pre = - slopes['pre'][0] * 1000 / (kenetics_params['kcoll'] * kenetics_params['constant'])
+    P_post = - slopes['post'][0] * 1000 / (kenetics_params['kcoll'] * kenetics_params['constant'])
+    P_reaction = (P_pre + P_post) / 2
+    K_exp = -slopes['reaction'][0] * 1000 / (P_reaction * kenetics_params['constant'])
+    efficiency = round(K_exp / reaction_params['kcoll'] * 100, 2)
+    print ''
+    print '========================================='
+    print 'results: '
+    print r'efficiency is %s %%' % efficiency
+    return efficiency
     
 if __name__ == '__main__':
     path = r'E:\lcqdata\data_3\mgf'
-    #test()
-    slopes = get_slopes(path)
-    print slopes
-
+    calculate(path)
 
 

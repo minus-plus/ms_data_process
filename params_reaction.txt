@@ -5,7 +5,3 @@ ploarizability: 3.3227
 dipole_moment: 18.03
 constant: 32390000000000000
 kcoll: 0.0000000018794
-
-item_need_to_cal: P_ion_trap, K_exp, efficiency
-
-
