@@ -90,8 +90,6 @@ def get_slope_r(folder_path, peaks):
 
 def get_slopes(path, peaks):
     folders = [d for d in listdir(path)]
-    print folders
-
     slopes = {}
     for folder in folders:
         folder_path = os.path.join(path, folder)
