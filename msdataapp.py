@@ -137,15 +137,19 @@ class MSDataApp(object):
         efficiency = round(K_exp / float(self.reaction_params['kcoll']) * 100, 2)
         self.results.append('')
         self.results.append('===============================')
+        f_p = '{0:>6} {1:<10}'
+        f_s = '{0:>6} {1:<10} {2:>6} {3:<10}'
+        f_k = '{0:>6} {1:<16}' 
+        f_e = '{0:>6} {1:<6}'
         self.results.append('Results:')
-        self.results.append('P_pre: %s' % P_pre)
-        self.results.append('slope_pre: %s     R_pre: %s\n' % (round(self.slopes['pre'][0]*1000, 4), self.slopes['pre'][1]))
-        self.results.append('P_post: %s' % P_post)
-        self.results.append('slope_post: %s     R_post: %s\n' % (round(self.slopes['post'][0]*1000, 4), self.slopes['post'][1]))
-        self.results.append('P_reaction: %s' % P_reaction)
-        self.results.append('slope_reaction: %s     R_reaction: %s\n' % (round(self.slopes['reaction'][0]*1000, 4), self.slopes['reaction'][1]))
-        self.results.append('K_exp: %s' % K_exp)
-        self.results.append('Efficiency: %s %%' % efficiency)
+        self.results.append(f_p.format('p_pre:', P_pre))
+        self.results.append(f_s.format('slope_pre:', round(self.slopes['pre'][0]*1000, 4), 'R_pre:', self.slopes['pre'][1]))
+        self.results.append(f_p.format('P_post', P_post))
+        self.results.append(f_s.format('slope_post:', round(self.slopes['post'][0]*1000, 4), 'R-post:', self.slopes['post'][1]))
+        self.results.append(f_p.format('P_reaction:', P_reaction))
+        self.results.append(f_s.format('slope_reaction:', round(self.slopes['reaction'][0]*1000, 4), 'R_reaction:', self.slopes['reaction'][1]))
+        self.results.append(f_k.format('K_exp:', K_exp))
+        self.results.append(f_e.format('Efficiency:', efficiency))
         return self.show_results()
     def show_results(self):
         results_string = '\n'.join(self.results)

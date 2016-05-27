@@ -28,14 +28,11 @@ reaction
 
 ===============================
 Results:
-P_pre: 4.12413204781e-08
-slope_pre: -3.0603     R_pre: 0.9946
-
-P_post: 4.34559802154e-08
-slope_post: -3.2247     R_post: 0.9988
-
+p_pre: 4.12413204781e-08
+slope_pre: -3.0603    R_pre: 0.9946    
+P_post 4.34559802154e-08
+slope_post: -3.2247    R-post: 0.9988    
 P_reaction: 4.23486503467e-08
-slope_reaction: -1.525     R_reaction: 0.9949
-
+slope_reaction: -1.525     R_reaction: 0.9949    
 K_exp: 1.11181505819e-09
-Efficiency: 59.16 %
+Efficiency: 59.16 
