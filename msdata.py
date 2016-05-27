@@ -1,4 +1,4 @@
-
+#!/usr/bin/python
 # coding: utf-8
 
 import os
@@ -79,6 +79,7 @@ def regression_calc(data, peaks):
         x.append(float(k))
         y.append(data[k][peaks[0]])
     return stats.linregress(x, y)
+    
 def get_slope_r(folder_path, peaks):
     if os.path.exists(folder_path):
         data_folder = get_data_from_folder(folder_path)
