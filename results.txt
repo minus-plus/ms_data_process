@@ -35,4 +35,4 @@ slope_post: -3.2247    R-post: 0.9988
 P_reaction: 4.23486503467e-08
 slope_reaction: -1.525     R_reaction: 0.9949    
 K_exp: 1.11181505819e-09
-Efficiency: 59.16 
+Efficiency: 59.16 %

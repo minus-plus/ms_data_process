@@ -12,7 +12,7 @@ import math
 import numpy as np
 from scipy import stats
 
-import read_params
+
 class Data(dict):
     def __getitem__(self, index):
         self.setdefault(index, 0.0)
@@ -140,7 +140,7 @@ class MSDataApp(object):
         f_p = '{0:>6} {1:<10}'
         f_s = '{0:>6} {1:<10} {2:>6} {3:<10}'
         f_k = '{0:>6} {1:<16}' 
-        f_e = '{0:>6} {1:<6}'
+        f_e = '{0:>6} {1:<6}%'
         self.results.append('Results:')
         self.results.append(f_p.format('p_pre:', P_pre))
         self.results.append(f_s.format('slope_pre:', round(self.slopes['pre'][0]*1000, 4), 'R_pre:', self.slopes['pre'][1]))

@@ -6,7 +6,6 @@ from Tkinter import *
 import tkFileDialog
 import json
 
-import msdata
 import msdataapp
 
 
@@ -20,32 +19,47 @@ class MainPage():
         self.main_label.grid(row=0, columnspan=5) 
         self.main_label.config(width=80)
         
-        self.path_label = Label(self.master, text='Folder :', borderwidth=2, bg='white') 
+        self.path_label = Label(self.master, text='Folder Path :', borderwidth=2, bg='white') 
         self.path_label.grid(row=1, sticky='e', padx=5, pady=5)
         
         self.path_var = StringVar(self.master, value=os.getcwd())
         self.path_entry = Entry(self.master, textvariable=self.path_var, bg='white')
         self.path_entry.grid(row=1, column=1, columnspan=3)
         self.path_entry.config(width=70)
-        self.path_entry.focus_set()
+
         
         self.select_path_button = Button(self.master, text='Edit..', command=(lambda path=self.path_var: self.read_path(path)))
         self.select_path_button.grid(row=1, column=4, sticky='w')
+
+        
+        self.result_path_label = Label(self.master, text='Result Path :', borderwidth=2, bg='white') 
+        self.result_path_label.grid(row=2, sticky='e', padx=5, pady=5)
+        
+        self.result_path_var = StringVar(self.master, value=os.getcwd())
+        self.result_path_entry = Entry(self.master, textvariable=self.result_path_var, bg='white')
+        self.result_path_entry.grid(row=2, column=1, columnspan=3)
+        self.result_path_entry.config(width=70)
+        self.result_path_entry.focus_set()
+        
+        self.select_result_path_button = Button(self.master, text='Edit..', command=(lambda path=self.result_path_var: self.read_path(path)))
+        self.select_result_path_button.grid(row=2, column=4, sticky='w')
+        
         
         self.params_frame = Frame(self.master)
-        self.params_frame.grid(row=2, columnspan = 5)
+        self.params_frame.grid(row=3, columnspan = 5)
         
         self.params_page = ParamsPage(self.params_frame, self.master)
         
         self.run_button = Button(self.master, text='Run', justify='center', command=self.run)
-        self.run_button.grid(row=3, columnspan=5, padx=5, pady=5, ipady=5)
+        self.run_button.grid(row=4, columnspan=5, padx=5, pady=5, ipady=5)
         self.run_button.config(width=70, bg='sea green', font = 'Arial 10 bold')
+        self.run_button.focus_set()
    
     def run(self):
         print self.path_entry.get()
         ms = msdataapp.MSDataApp(self.path_entry.get())
         self.results = ms.calculate()
-        re = open('results.txt', 'w')
+        re = open(os.path.join(self.result_path_var.get(),'results.txt'), 'w')
         re.write(self.results)
         re.close()
         print self.results
