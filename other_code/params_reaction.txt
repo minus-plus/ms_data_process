@@ -1,7 +1,0 @@
-type: reaction
-compound_1: rovis-3c, 322
-compound_2: DBU, 153
-ploarizability: 3.3227
-dipole_moment: 18.03
-constant: 32390000000000000
-kcoll: 0.0000000018794
