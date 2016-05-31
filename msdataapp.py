@@ -48,9 +48,7 @@ class MSDataApp(object):
         for key in data:
             val = data[key]
             data[key] = val / max_value * 100
-    
-    def read_data_file(self, filename):
-        #print 'reading file %s..' % filename
+    def read_data_file_2(self, filename):
         data = Data()
         if os.path.exists(filename):
             lines = open(filename).readlines()
@@ -59,7 +57,24 @@ class MSDataApp(object):
                 if l[0].isdigit():
                     l = l.split(' ')
                     peak, value = str(int(round(float(l[0]),0))), float(l[1])
-                    data[peak] = max(value, data[peak])
+                    data[peak] = data[peak] + value
+        else:
+            print '%s does not exist!' % filename
+            sys.exit(0)
+        self.normalize(data)
+        return data 
+    def read_data_file(self, filename):
+        print 'reading file %s..' % filename
+        data = Data()
+        if os.path.exists(filename):
+            lines = open(filename).readlines()
+            for l in lines:
+                l = l.split('\n')[0]
+                if l[0].isdigit():
+                    l = l.split(' ')
+                    peak, value = str(int(round(float(l[0]),0))), float(l[1])
+                    #data[peak] = max(value, data[peak])
+                    data[peak] = value + data[peak]
         else:
             print '%s does not exist!' % filename
             sys.exit(0)
@@ -72,7 +87,7 @@ class MSDataApp(object):
             data_folder=Data()
             files = [f for f in listdir(path) if isfile(join(path, f))]
             for f in files:
-                data = self.read_data_file(join(path, f))
+                data = self.read_data_file_2(join(path, f))
                 time = float(f.split('_')[-2].split('ms')[0])
                 data_folder[time] = data
             return data_folder
@@ -95,7 +110,7 @@ class MSDataApp(object):
             #print val
             d[peaks[0]] = math.log(data[key][peaks[0]] / val )
             d[peaks[1]] = math.log(data[key][peaks[1]] / val)
-            f = '{0:6} {1:6} {2:6}'
+            f = '{0:>6} {1:>6} {2:>6}'
             #print f.format(key, round(data[key][peaks[0]], 2), round(data[key][peaks[1]], 2))
             self.results.append(f.format(key, round(data[key][peaks[0]], 2), round(data[key][peaks[1]], 2)))
             new_data[key] = d

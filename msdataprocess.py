@@ -27,11 +27,10 @@ class MainPage():
         self.path_entry.grid(row=1, column=1, columnspan=3)
         self.path_entry.config(width=70)
 
-        
         self.select_path_button = Button(self.master, text='Edit..', command=(lambda path=self.path_var: self.read_path(path)))
         self.select_path_button.grid(row=1, column=4, sticky='w')
 
-        
+        #reault path
         self.result_path_label = Label(self.master, text='Result Path :', borderwidth=2, bg='white') 
         self.result_path_label.grid(row=2, sticky='e', padx=5, pady=5)
         
@@ -40,18 +39,28 @@ class MainPage():
         self.result_path_entry.grid(row=2, column=1, columnspan=3)
         self.result_path_entry.config(width=70)
         self.result_path_entry.focus_set()
-        
+
         self.select_result_path_button = Button(self.master, text='Edit..', command=(lambda path=self.result_path_var: self.read_path(path)))
         self.select_result_path_button.grid(row=2, column=4, sticky='w')
         
+        # result name
+        self.result_name_label = Label(self.master, text='Result name :', borderwidth=2, bg='white') 
+        self.result_name_label.grid(row=3, sticky='e', padx=5, pady=5)
         
+        self.result_name_var = StringVar(self.master)
+        self.result_name_entry = Entry(self.master, textvariable=self.result_name_var, bg='white')
+        self.result_name_entry.grid(row=3, column=1, columnspan=2)
+        self.result_name_entry.config(width=70)
+                
+        # kinetics and reaction parameter frame
         self.params_frame = Frame(self.master)
-        self.params_frame.grid(row=3, columnspan = 5)
+        self.params_frame.grid(row=4, columnspan = 5)
         
         self.params_page = ParamsPage(self.params_frame, self.master)
         
+        # run button
         self.run_button = Button(self.master, text='Run', justify='center', command=self.run)
-        self.run_button.grid(row=4, columnspan=5, padx=5, pady=5, ipady=5)
+        self.run_button.grid(row=5, columnspan=5, padx=5, pady=5, ipady=5)
         self.run_button.config(width=70, bg='sea green', font = 'Arial 10 bold')
         self.run_button.focus_set()
    
@@ -59,10 +68,14 @@ class MainPage():
         print self.path_entry.get()
         ms = msdataapp.MSDataApp(self.path_entry.get())
         self.results = ms.calculate()
-        re = open(os.path.join(self.result_path_var.get(),'results.txt'), 'w')
+        re_path = os.path.join(self.result_path_var.get(),self.result_name_var.get())
+        print re_path
+        re = open(re_path + '.txt', 'w')
         re.write(self.results)
         re.close()
+        self.show_results()
         print self.results
+        
     def read_path(self, path):
         dirpage = Toplevel(self.master)
         dirpage.withdraw()
@@ -71,6 +84,11 @@ class MainPage():
         dirname = tkFileDialog.askdirectory(**dir_opt)
         path.set(dirname)
         dirpage.destroy()
+        
+    def show_results(self):
+        msg = Message(Tk(), text=self.results)
+        msg.pack()
+
 
     
 class ParamsPage():
@@ -106,14 +124,16 @@ class ParamsPage():
         self.entries_r = self.make_form(self.form_r, fields_kinetics, self.params['reaction'])
 
         self.form_save = Frame(self.master)
+        
+        #save button
         self.form_save.grid(row=2, column=0, columnspan=2, sticky='w', padx=5, pady=5)
         self.save_button = Button(self.master, text='Save', command=self.save_form)
         self.save_button.grid(row=2, column=0, ipadx=5, padx=5, pady=5)
+        
+        # quit button
         self.quit_button = Button(self.master, text='Quit', command=self.root.destroy)
         self.quit_button.grid(row=2, column=1, ipadx=5, padx=5, pady=5)
         self.quit_button.config(bg='goldenrod')
-        
-        
         
 
         
