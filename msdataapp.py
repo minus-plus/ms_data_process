@@ -25,6 +25,7 @@ class MSDataApp(object):
         self.params = self.read_params()
         self.kinetics_params = self.params['kinetics']
         self.reaction_params = self.params['reaction']
+        self.types = ['pre', 'reaction', 'post']
         self.peaks = self.read_peaks()
         self.results = []
        
@@ -48,7 +49,7 @@ class MSDataApp(object):
         for key in data:
             val = data[key]
             data[key] = val / max_value * 100
-    def read_data_file_2(self, filename):
+    def read_data_file(self, filename):
         data = Data()
         if os.path.exists(filename):
             lines = open(filename).readlines()
@@ -63,43 +64,45 @@ class MSDataApp(object):
             sys.exit(0)
         self.normalize(data)
         return data 
-    def read_data_file(self, filename):
-        print 'reading file %s..' % filename
-        data = Data()
-        if os.path.exists(filename):
-            lines = open(filename).readlines()
-            for l in lines:
-                l = l.split('\n')[0]
-                if l[0].isdigit():
-                    l = l.split(' ')
-                    peak, value = str(int(round(float(l[0]),0))), float(l[1])
-                    #data[peak] = max(value, data[peak])
-                    data[peak] = value + data[peak]
-        else:
-            print '%s does not exist!' % filename
-            sys.exit(0)
-        self.normalize(data)
-        return data 
+   
     
-    def read_data_folder(self, path):
-        if os.path.exists(path):
-            print 'loading folder %s..' % path
-            data_folder=Data()
-            files = [f for f in listdir(path) if isfile(join(path, f))]
-            for f in files:
-                data = self.read_data_file_2(join(path, f))
-                time = float(f.split('_')[-2].split('ms')[0])
-                data_folder[time] = data
-            return data_folder
-        else:
-            print '%s does not exist!' % path
+    def read_data_type(self, files):
+        data_files = Data()
+        for f in files:
+            data = self.read_data_file(join(self.path, f))
+            time = float(f.split('_')[-2].split('ms')[0])
+            data_files[time] = data
+        return data_files
+        
     def read_data_path(self):
-        folders = [d for d in listdir(self.path)]
+
+        files = [f for f in listdir(self.path) if f.endswith('.txt') and isfile(os.path.join(self.path, f))]
+        files_type = {}
+        files_type['pre'] = []
+        files_type['reaction'] = []
+        files_type['post'] = []
+        pre_post = {}
+        for f in files:
+            if not f[0].isdigit():
+                files_type['reaction'].append(f)
+            else:
+                ind = f.split('_')[-1].split('.')[0]
+                if not ind[-1].isdigit():
+                    ind = ind[0:-1]
+                ind = int(ind)
+                if ind not in pre_post.keys():
+                    pre_post[ind] = []
+                pre_post[ind].append(f)
+        ks = pre_post.keys()
+        files_type['pre'] = pre_post[min(ks)]
+        files_type['post'] = pre_post[max(ks)]
+        
         path_data = {}
-        for folder in folders:
-            folder_path = os.path.join(self.path, folder)
-            path_data[folder] = self.read_data_folder(folder_path)
+        
+        for t in files_type:
+            path_data[t] = self.read_data_type(files_type[t])
         return path_data
+        
         
     def filt(self, data, peaks):
         new_data = dict()
@@ -125,22 +128,21 @@ class MSDataApp(object):
             y.append(data[k][peaks[0]])
         return stats.linregress(x, y)
     
-    def get_slopes_folder(self, folder):
-        data_folder = self.data[folder]
-        peaks = self.peaks[folder].split(' ')
+    def get_slopes_type(self, type):
+        data_type = self.data[type]
+        peaks = self.peaks[type].split(' ')
         self.results.append('===============================')
         f = '{0:>6} {1:>6} {2:>6}'
-        self.results.append('%s'% folder)
+        self.results.append('%s'% type)
         self.results.append(f.format('time', peaks[0], peaks[1]))
-        data = self.filt(data_folder, peaks)
+        data = self.filt(data_type, peaks)
         k, b, r, p, std = self.regression_calc(data, peaks)
-        return k, round(-r, 4)
+        return k, round(-r, 4), b
         
     def get_slopes(self):
-        folders = [d for d in listdir(self.path)]
         slopes = {}
-        for folder in folders:
-            slopes[folder] = self.get_slopes_folder(folder)
+        for type in self.types:
+            slopes[type] = self.get_slopes_type(type)
         self.slopes = slopes
         return slopes
     def calculate(self):
@@ -157,20 +159,30 @@ class MSDataApp(object):
         f_k = '{0:>6} {1:<16}' 
         f_e = '{0:>6} {1:<6}%'
         self.results.append('Results:')
+        self.results.append('\n-= pre =-')
         self.results.append(f_p.format('p_pre:', P_pre))
         self.results.append(f_s.format('slope_pre:', round(self.slopes['pre'][0]*1000, 4), 'R_pre:', self.slopes['pre'][1]))
+        self.results.append('Equation: y = %s x + %s' % (self.slopes['pre'][0], self.slopes['pre'][2] ))
+        
+        self.results.append('\n-= post =-')
         self.results.append(f_p.format('P_post', P_post))
         self.results.append(f_s.format('slope_post:', round(self.slopes['post'][0]*1000, 4), 'R-post:', self.slopes['post'][1]))
+        self.results.append('Equation: y = %s x + %s' % (self.slopes['post'][0], self.slopes['post'][2] ))
+        
+        self.results.append('\n-= reaction =-')
         self.results.append(f_p.format('P_reaction:', P_reaction))
         self.results.append(f_s.format('slope_reaction:', round(self.slopes['reaction'][0]*1000, 4), 'R_reaction:', self.slopes['reaction'][1]))
+        self.results.append('Equation: y = %s x + %s' % (self.slopes['reaction'][0], self.slopes['reaction'][2] ))
         self.results.append(f_k.format('K_exp:', K_exp))
+        
+        self.results.append('\n-= Efficiency =-')
         self.results.append(f_e.format('Efficiency:', efficiency))
         return self.show_results()
     def show_results(self):
         results_string = '\n'.join(self.results)
         return results_string
 if __name__ == '__main__':
-    path = r'E:\lcqdata\data_3\mgf'
+    path = r'E:/lcqdata/data/9. 02_29_2016_Data Print_3i (Rovis)/HP1dma/1'
     ms = MSDataApp(path)
     ms.calculate()
     print ms.show_results()

@@ -14,30 +14,34 @@ fields_reaction = ['compound 1', 'compound 2', 'ploarizability', 'dipole moment'
 
 class MainPage():
     def __init__(self, master, info='Home'):
+        self.path_params = self.load_path_params()
         self.master = master
         self.main_label = Label(self.master, text=info,  justify=CENTER, bg='white')
         self.main_label.grid(row=0, columnspan=5) 
         self.main_label.config(width=80)
         
+        # data path
         self.path_label = Label(self.master, text='Folder Path :', borderwidth=2, bg='white') 
         self.path_label.grid(row=1, sticky='e', padx=5, pady=5)
         
-        self.path_var = StringVar(self.master, value=os.getcwd())
+        self.path_var = StringVar(self.master)
         self.path_entry = Entry(self.master, textvariable=self.path_var, bg='white')
         self.path_entry.grid(row=1, column=1, columnspan=3)
         self.path_entry.config(width=70)
+        self.path_entry.insert(0, self.path_params['data_path'])
 
         self.select_path_button = Button(self.master, text='Edit..', command=(lambda path=self.path_var: self.read_path(path)))
         self.select_path_button.grid(row=1, column=4, sticky='w')
 
-        #reault path
+        #result path
         self.result_path_label = Label(self.master, text='Result Path :', borderwidth=2, bg='white') 
         self.result_path_label.grid(row=2, sticky='e', padx=5, pady=5)
         
-        self.result_path_var = StringVar(self.master, value=os.getcwd())
+        self.result_path_var = StringVar(self.master)
         self.result_path_entry = Entry(self.master, textvariable=self.result_path_var, bg='white')
         self.result_path_entry.grid(row=2, column=1, columnspan=3)
         self.result_path_entry.config(width=70)
+        self.result_path_entry.insert(0, self.path_params['result_path'])
         self.result_path_entry.focus_set()
 
         self.select_result_path_button = Button(self.master, text='Edit..', command=(lambda path=self.result_path_var: self.read_path(path)))
@@ -49,8 +53,12 @@ class MainPage():
         
         self.result_name_var = StringVar(self.master)
         self.result_name_entry = Entry(self.master, textvariable=self.result_name_var, bg='white')
-        self.result_name_entry.grid(row=3, column=1, columnspan=2)
-        self.result_name_entry.config(width=70)
+        self.result_name_entry.grid(row=3, column=1, sticky = 'w')
+        self.result_name_entry.insert(0, self.path_params['file_name'])
+        self.result_name_entry.config(width=30)
+        
+        self.default_button = Button(self.master, text='Save Default', command=self.save_default_path)
+        self.default_button.grid(row=3, column=3, sticky='w')
                 
         # kinetics and reaction parameter frame
         self.params_frame = Frame(self.master)
@@ -63,7 +71,32 @@ class MainPage():
         self.run_button.grid(row=5, columnspan=5, padx=5, pady=5, ipady=5)
         self.run_button.config(width=70, bg='sea green', font = 'Arial 10 bold')
         self.run_button.focus_set()
-   
+        
+    def save_default_path(self):
+        path_params_dict = {}
+        path_params_dict['data_path'] = self.path_entry.get()
+        path_params_dict['result_path'] = self.result_path_entry.get()
+        path_params_dict['file_name'] = self.result_name_entry.get()
+        #print path_params_dict
+        #print json.dumps(path_params_dict)
+        #print 'dumping jason'
+        outfile = open('path_params.json', 'w')
+        json.dump(path_params_dict, outfile)
+        outfile.close()       
+        print 'Default path parameters saved ..'
+        
+    def load_path_params(self):
+        params_saved = {}
+        if os.path.exists('path_params.json'):
+            file = open('path_params.json')
+            params_saved = json.load(file)
+            file.close()
+        else:
+            params_saved['data_path'] = ''
+            params_saved['result_path'] = ''
+            params_saved['file_name'] = ''
+        return params_saved
+        
     def run(self):
         print self.path_entry.get()
         ms = msdataapp.MSDataApp(self.path_entry.get())
@@ -83,12 +116,18 @@ class MainPage():
         dir_opt = {'parent':dirpage, 'initialdir':os.getcwd(), 'title':'Select the folder', 'mustexist':True}
         dirname = tkFileDialog.askdirectory(**dir_opt)
         path.set(dirname)
-        dirpage.destroy()
+        if dirpage:
+            dirpage.destroy()
         
     def show_results(self):
-        msg = Message(Tk(), text=self.results)
-        msg.pack()
-
+        w = Tk()
+        scrollbar = Scrollbar(w)
+        text = Text(w)
+        scrollbar.pack(side = RIGHT, fill=Y )
+        text.pack()
+        scrollbar.config(command=text.yview)
+        text.config(yscrollcommand=scrollbar.set)
+        text.insert(END, self.results)
 
     
 class ParamsPage():
@@ -172,6 +211,7 @@ class ParamsPage():
         outfile = open('params.json', 'w')
         json.dump(params_dict, outfile)
         outfile.close()
+        print 'Default kinetics and reaction parameters saved ..'
 
         
 if __name__ == '__main__':
