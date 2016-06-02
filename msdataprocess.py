@@ -8,7 +8,11 @@ import json
 
 import msdataapp
 
-
+class Parameters(dict):
+    def __getitem__(self, index):
+        self.setdefault(index, '')
+        return dict.__getitem__(self, index)
+        
 fields_kinetics = ['compound 1', 'compound 2', 'ploarizability', 'dipole moment', 'constant', 'kcoll', 'peaks']
 fields_reaction = ['compound 1', 'compound 2', 'ploarizability', 'dipole moment', 'constant', 'kcoll', 'peaks']
 
@@ -93,15 +97,12 @@ class MainPage():
         print msg_text
         
     def load_path_params(self):
-        params_saved = {}
+        params_saved = Parameters()
         if os.path.exists('path_params.json'):
             file = open('path_params.json')
             params_saved = json.load(file)
             file.close()
-        else:
-            params_saved['data_path'] = ''
-            params_saved['result_path'] = ''
-            params_saved['file_name'] = ''
+
         return params_saved
         
     def run(self):
@@ -109,13 +110,13 @@ class MainPage():
         ms = msdataapp.MSDataApp(self.path_entry.get())
         self.results = ms.calculate()
         re_path = os.path.join(self.result_path_var.get(),self.result_name_var.get())
-        print re_path
+        #print re_path
         re = open(re_path + '.txt', 'w')
         self.results = self.result_name_entry.get() + '\n' + self.results
         re.write(self.results)
         re.close()
         self.show_results()
-        print self.results
+        #print self.results
         
     def read_path(self, path):
         dirpage = Toplevel(self.master)
@@ -185,9 +186,14 @@ class ParamsPage():
 
         
     def load_params(self):
-        file = open('params.json')
-        params_saved = json.load(file)
-        file.close()
+        params_saved = dict()
+        if os.path.exists('params.json'):
+            file = open('params.json')
+            params_saved = json.load(file)
+            file.close()
+        else:
+            params_saved['kinetics'] = Parameters()
+            params_saved['reaction'] = Parameters()
         return params_saved
     
     def make_form(self, master, fields, params_saved):
@@ -221,7 +227,7 @@ class ParamsPage():
         outfile.close()
         msg_text = 'Kinetics and Reaction Parameters Saved ..'
         show_message(msg_text)
-        print msg_text
+        #print msg_text
 
         
 if __name__ == '__main__':
