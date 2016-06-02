@@ -162,17 +162,20 @@ class MSDataApp(object):
         self.results.append('\n-= pre =-')
         self.results.append(f_p.format('p_pre:', P_pre))
         self.results.append(f_s.format('slope_pre:', round(self.slopes['pre'][0]*1000, 4), 'R_pre:', self.slopes['pre'][1]))
-        self.results.append('Equation: y = %s x + %s' % (self.slopes['pre'][0], self.slopes['pre'][2] ))
+        sign = '-' if self.slopes['pre'][2] < 0 else '+'
+        self.results.append('Equation: y = %s x %s %s' % (self.slopes['pre'][0], sign, abs(self.slopes['pre'][2] )))
         
         self.results.append('\n-= post =-')
         self.results.append(f_p.format('P_post', P_post))
         self.results.append(f_s.format('slope_post:', round(self.slopes['post'][0]*1000, 4), 'R-post:', self.slopes['post'][1]))
-        self.results.append('Equation: y = %s x + %s' % (self.slopes['post'][0], self.slopes['post'][2] ))
+        sign = '-' if self.slopes['post'][2] < 0 else '+'
+        self.results.append('Equation: y = %s x %s %s' % (self.slopes['post'][0], sign, abs(self.slopes['post'][2])))
         
         self.results.append('\n-= reaction =-')
         self.results.append(f_p.format('P_reaction:', P_reaction))
         self.results.append(f_s.format('slope_reaction:', round(self.slopes['reaction'][0]*1000, 4), 'R_reaction:', self.slopes['reaction'][1]))
-        self.results.append('Equation: y = %s x + %s' % (self.slopes['reaction'][0], self.slopes['reaction'][2] ))
+        sign = '-' if self.slopes['reaction'][2] < 0 else '+'
+        self.results.append('Equation: y = %s x %s %s' % (self.slopes['reaction'][0], sign, abs(self.slopes['reaction'][2])))
         self.results.append(f_k.format('K_exp:', K_exp))
         
         self.results.append('\n-= Efficiency =-')

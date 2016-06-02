@@ -12,8 +12,13 @@ import msdataapp
 fields_kinetics = ['compound 1', 'compound 2', 'ploarizability', 'dipole moment', 'constant', 'kcoll', 'peaks']
 fields_reaction = ['compound 1', 'compound 2', 'ploarizability', 'dipole moment', 'constant', 'kcoll', 'peaks']
 
+def show_message(msg_text):
+    msg = Message(Tk(), text=msg_text)
+    msg.config(width=300, justify='center', padx=50, pady=50, font='Arial 9', relief=RIDGE)
+    msg.pack()
+        
 class MainPage():
-    def __init__(self, master, info='Home'):
+    def __init__(self, master, info='MS Data Process'):
         self.path_params = self.load_path_params()
         self.master = master
         self.main_label = Label(self.master, text=info,  justify=CENTER, bg='white')
@@ -21,7 +26,7 @@ class MainPage():
         self.main_label.config(width=80)
         
         # data path
-        self.path_label = Label(self.master, text='Folder Path :', borderwidth=2, bg='white') 
+        self.path_label = Label(self.master, text='Folder Path :', borderwidth=2) 
         self.path_label.grid(row=1, sticky='e', padx=5, pady=5)
         
         self.path_var = StringVar(self.master)
@@ -34,7 +39,7 @@ class MainPage():
         self.select_path_button.grid(row=1, column=4, sticky='w')
 
         #result path
-        self.result_path_label = Label(self.master, text='Result Path :', borderwidth=2, bg='white') 
+        self.result_path_label = Label(self.master, text='Result Path :', borderwidth=2) 
         self.result_path_label.grid(row=2, sticky='e', padx=5, pady=5)
         
         self.result_path_var = StringVar(self.master)
@@ -48,7 +53,7 @@ class MainPage():
         self.select_result_path_button.grid(row=2, column=4, sticky='w')
         
         # result name
-        self.result_name_label = Label(self.master, text='Result name :', borderwidth=2, bg='white') 
+        self.result_name_label = Label(self.master, text='Result name :', borderwidth=2) 
         self.result_name_label.grid(row=3, sticky='e', padx=5, pady=5)
         
         self.result_name_var = StringVar(self.master)
@@ -82,8 +87,10 @@ class MainPage():
         #print 'dumping jason'
         outfile = open('path_params.json', 'w')
         json.dump(path_params_dict, outfile)
-        outfile.close()       
-        print 'Default path parameters saved ..'
+        outfile.close()
+        msg_text = 'Default Path Parameters Saved ..'
+        show_message(msg_text)
+        print msg_text
         
     def load_path_params(self):
         params_saved = {}
@@ -104,6 +111,7 @@ class MainPage():
         re_path = os.path.join(self.result_path_var.get(),self.result_name_var.get())
         print re_path
         re = open(re_path + '.txt', 'w')
+        self.results = self.result_name_entry.get() + '\n' + self.results
         re.write(self.results)
         re.close()
         self.show_results()
@@ -200,7 +208,7 @@ class ParamsPage():
         for entry in entries:
             params[entry[0]] = entry[1].get()
         return params
-        
+    
     def save_form(self):
         params_dict = {}
         params_dict['kinetics'] = self.get_entries(self.entries_k)
@@ -211,7 +219,9 @@ class ParamsPage():
         outfile = open('params.json', 'w')
         json.dump(params_dict, outfile)
         outfile.close()
-        print 'Default kinetics and reaction parameters saved ..'
+        msg_text = 'Kinetics and Reaction Parameters Saved ..'
+        show_message(msg_text)
+        print msg_text
 
         
 if __name__ == '__main__':
